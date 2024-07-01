@@ -1,4 +1,4 @@
-#include "gpio_conf.h"
+#include "../lib/gpio_conf.h"
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <stdlib.h>

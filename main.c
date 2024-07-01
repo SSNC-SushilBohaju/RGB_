@@ -20,12 +20,21 @@ int main(int argc, char *argv[])
     while (1)
     {
         /**
+         * For blinking Green light
          * For Green High
          */
         set_led_color(red_pin, LOW); 
         set_led_color(green_pin, HIGH); 
         set_led_color(blue_pin, LOW); 
         usleep(500000);
+        /**
+         * For Green Low
+         */
+        set_led_color(red_pin, LOW); 
+        set_led_color(green_pin, LOW); 
+        set_led_color(blue_pin, LOW); 
+        usleep(500000);
+
 
     }
 
