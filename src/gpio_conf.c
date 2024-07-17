@@ -2,30 +2,48 @@
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#define HIGH 1
+#define LOW 0
+
+#define GPIO_BASE_PI_1 0x20000000
+#define GPIO_BASE_PI_2_3 0x3F200000
+#define GPIO_BASE_PI_4 0xFE200000
+
+#define GPIO_SET *(gpio + 7)  // GPSET0
+#define GPIO_CLR *(gpio + 10) // GPCLR0
+#define GPIO_LEV *(gpio + 13) // GPLEV0
 
 volatile unsigned *gpio;
 
+
+
 unsigned long get_gpio_base_address() {
-    struct stat stat_buf;
-    if (stat("/proc/device-tree/soc/ranges", &stat_buf) == 0) {
-        FILE *fp = fopen("/proc/device-tree/soc/ranges", "rb");
-        if (fp) {
-            unsigned char buf[4];
-            fseek(fp, 4, SEEK_SET); // Skip the first 4 bytes
-            if (fread(buf, 1, sizeof(buf), fp) == sizeof(buf)) {
-                fclose(fp);
-                if (buf[0] == 0x00 && buf[1] == 0x00 && buf[2] == 0x00 && buf[3] == 0x20) {
-                    return GPIO_BASE_PI_1; // Raspberry Pi 1
-                } else if (buf[0] == 0x3F) {
-                    return GPIO_BASE_PI_2_3_4; // Raspberry Pi 2, 3, or 4
+    // Check /proc/cpuinfo for model information
+    FILE *fp_cpuinfo = fopen("/proc/cpuinfo", "r");
+    if (fp_cpuinfo) {
+        char line[256];
+        while (fgets(line, sizeof(line), fp_cpuinfo)) {
+            if (strncmp(line, "Model", 5) == 0) {
+                if (strstr(line, "Raspberry Pi 3 Model B") || strstr(line, "Raspberry Pi 2 Model B")) {
+                    fclose(fp_cpuinfo);
+                    return GPIO_BASE_PI_2_3;
+                } else if (strstr(line, "Raspberry Pi 1 Model B")) {
+                    fclose(fp_cpuinfo);
+                    return GPIO_BASE_PI_1;
+                } else if (strstr(line, "Raspberry Pi 4 Model B")) {
+                    fclose(fp_cpuinfo);
+                    return GPIO_BASE_PI_4;
                 }
             }
         }
+        fclose(fp_cpuinfo);
+    } else {
+        fprintf(stderr, "Failed to open /proc/cpuinfo\n");
     }
+
     fprintf(stderr, "Error: Unable to determine Raspberry Pi model.\n");
     exit(EXIT_FAILURE);
 }
-
 
 void gpio_setup(int red_pin, int green_pin, int blue_pin,unsigned long gpio_base)
 {
