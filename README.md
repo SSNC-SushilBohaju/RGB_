@@ -3,6 +3,7 @@
 Process to compile
 
 1) sudo gcc -shared -o librgb.so -fPIC jni_rgb_driver.c -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux -I./lib src/gpio_conf.c src/rgb_driver.c
+2) javac Main.java
   -- This will create librgb share library and Main.class, copy librgb.so file inside of /usr/lib directory
 
 To run
